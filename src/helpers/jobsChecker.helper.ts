@@ -3,6 +3,7 @@ import { sendDiscordAlert } from '../services/discord.service';
 import { SequencerService } from '../services/sequencer.service';
 import { errorHelper } from './error.helper';
 
+//check if jobs failed 10 times
 export async function checkJobs(): Promise<void> {
   const sequencerService = new SequencerService();
   let failedJobsCount: { [address: string]: number } = {};
@@ -13,7 +14,7 @@ export async function checkJobs(): Promise<void> {
       const jobs = await sequencerService.getJobs();
 
       jobs.forEach((job) => {
-        if (!job.canWork) {
+        if (job.canWork) {
           failedJobsCount[job.address] = 0;
         } else {
           if (!failedJobsCount[job.address]) {
@@ -23,7 +24,7 @@ export async function checkJobs(): Promise<void> {
         }
       });
 
-      const failedJobs = Object.keys(failedJobsCount).filter((address: string) => failedJobsCount[address] >= 10);
+      const failedJobs = getJobsToNotify(failedJobsCount);
       if (failedJobs.length > 0)
         await sendDiscordAlert(`Job/s failed: ${failedJobs} in block number ${blockNumber}`);
     } catch (error) {
@@ -31,3 +32,10 @@ export async function checkJobs(): Promise<void> {
     }
   });
 }
+
+//get jobs that failed 10 times
+function getJobsToNotify(failedJobsCount: { [address: string]: number; }) {
+  
+  return Object.keys(failedJobsCount).filter((address: string) => failedJobsCount[address] >= 10);
+}
+
