@@ -3,7 +3,6 @@ import { sendDiscordAlert } from '../services/discord.service';
 import { SequencerService } from '../services/sequencer.service';
 import { errorHelper } from './error.helper';
 
-
 /**
  * Monitors blockchain jobs by subscribing to new blocks and checking their workable status.
  * Initializes the SequencerService, subscribes to block events, fetches active networks,
@@ -15,9 +14,9 @@ export async function checkJobs(): Promise<void> {
   const consecutiveWorkableBlocks: { [jobAddress: string]: number } = {};
 
   sequencerService.provider.on('block', async (blockNumber) => {
-
     try {
-      const networks = [...await sequencerService.getNetworks()]; //  [...] is utilized to copy array and avoid listener concurrency
+      console.log(`Checking jobs for block number ${blockNumber}`);
+      const networks = [...await sequencerService.getNetworks()]; //  [...] is utilized to copy array and avoid listener concurrency error
       const addresses: string[] = [...await sequencerService.getJobs()];
 
       for (const network of networks) {
@@ -47,9 +46,8 @@ export async function checkJobs(): Promise<void> {
  * @param {number} blockNumber - The current block number.
  * @param {any} canWork - The workable status of the job.
  */
-const handleConsecutiveWorkableBlocks = async (consecutiveWorkableBlocks: { [jobAddress: string]: number }, jobAddress: string, network: string, blocknumber: number, canWork: any) => {
+export const handleConsecutiveWorkableBlocks = async (consecutiveWorkableBlocks: { [jobAddress: string]: number }, jobAddress: string, network: string, blocknumber: number, canWork: any) => {
   try {
-    console.log(` ${jobAddress} has been worked  ${canWork[0]} after ${consecutiveWorkableBlocks[`${jobAddress}-${network}`]} consecutive blocks, at block ${blocknumber} on network ${network}`)
     if (canWork[0] && consecutiveWorkableBlocks[`${jobAddress}-${network}`] > 0) {
       consecutiveWorkableBlocks[`${jobAddress}-${network}`] = 0;
     }
@@ -59,9 +57,8 @@ const handleConsecutiveWorkableBlocks = async (consecutiveWorkableBlocks: { [job
         await sendDiscordAlert(`Workable job ${jobAddress} has not been worked for ${consecutiveWorkableBlocks[`${jobAddress}-${network}`]} consecutive blocks`);
       }
     }
+    console.log(` ${jobAddress} has been worked ${canWork[0]} after ${consecutiveWorkableBlocks[`${jobAddress}-${network}`]} consecutive blocks, at block ${blocknumber} on network ${network}`)
   } catch (error) {
     console.error(`Error checking workable status for job ${jobAddress} on network ${network}:`, error);
   }
 };
-
-

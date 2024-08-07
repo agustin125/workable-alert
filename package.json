@@ -19,7 +19,7 @@
     "start": "tsc && node dist/index.js",
     "local": "tsc && node dist/local.js",
     "dev": "ts-node-dev src/index.ts",
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "zip": "npm run build && zip -r automation-workable-alert.zip . -x '*.git*' -x 'src/*' -x '*.zip'"
   }
 }

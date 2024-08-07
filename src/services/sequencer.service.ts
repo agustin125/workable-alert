@@ -7,6 +7,9 @@ const SEQUENCER_ADDRESS = process.env.SEQUENCER_ADDRESS as string;
 const PROVIDER_URL = process.env.PROVIDER_URL;
 const PROVIDER_WSS = process.env.PROVIDER_WSS as string;
 
+/**
+ * The SequencerService class interacts with the Ethereum blockchain to monitor and manage sequencer jobs and networks.
+ */
 export class SequencerService {
   provider: ethers.JsonRpcApiProvider;
   private sequencerContract: ethers.Contract;
